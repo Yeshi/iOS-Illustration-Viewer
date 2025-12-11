@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct Illustration_ViewerApp: App {
+    @StateObject private var repo = IllustrationRepository()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                           .environmentObject(repo)
         }
     }
 }

@@ -4,7 +4,7 @@
 //
 //  Created by Yeshi on 2025/12/01.
 //
-
+/*
 import SwiftUI
 
 struct ContentView: View {
@@ -103,3 +103,4 @@ struct ThumbnailView: View {
 #Preview {
     ContentView()
 }
+*/

@@ -7,13 +7,13 @@
 import SwiftUI
 
 struct ImageView: View {
-    let imageName: String
+    let image: UIImage
     
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     
     var body: some View {
-        Image(imageName)
+        Image(uiImage: image)
             .resizable()
             .scaledToFit()
             .scaleEffect(scale)
