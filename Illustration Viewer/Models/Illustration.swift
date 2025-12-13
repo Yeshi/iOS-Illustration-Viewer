@@ -8,7 +8,17 @@
 struct Illustration: Identifiable, Codable {
     let id: String
     let filename: String
-    var title: String
-    var tags: [String]
+    var tagIDs: [String]
+    var rating: Int
+}
+
+struct Tag: Identifiable, Codable, Hashable {
+    let id: String
+    var label: String
+}
+
+struct IllustrationUserData: Codable, Hashable {
+    let id: String
+    var tagIDs: [String]
     var rating: Int
 }

@@ -10,19 +10,60 @@ import UIKit
 
 struct ContentView: View {
     @EnvironmentObject var repo: IllustrationRepository
-        
+    @State private var selectedTagIDs: Set<String> = []
+    @State private var showTagSettings = false
+    
     private let columns = Array(
         repeating: GridItem(.flexible(), spacing: 8),
         count:3
     )
     
+    private var filteredIllustrations: [Illustration] {
+        let all = repo.illustrations
+        
+        guard !selectedTagIDs.isEmpty else {
+            return all
+        }
+        
+        return all.filter { illust in
+            selectedTagIDs.allSatisfy{ illust.tagIDs.contains($0) }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
+            VStack(spacing: 0) {
+                HStack {
+                    TagFilterBar(
+                        allTags: repo.allTags,
+                        selectedTagIDs: $selectedTagIDs
+                    )
+                    Button {
+                        showTagSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.title3)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .sheet(isPresented: $showTagSettings){
+                    TagSettingsView()
+                        .environmentObject(repo)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                
+                Divider()
+            }
+            
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 8) {
-                    ForEach(repo.illustrations.enumerated(), id: \.1.id){index, illust in
+                    ForEach(Array(filteredIllustrations.enumerated()), id: \.1.id){_, illust in
                         NavigationLink {
-                            DetailView(initialIndex: index)
+                            if let globalIndex = repo.illustrations.firstIndex(where: { $0.id == illust.id }){
+                                DetailView(initialIndex: globalIndex)
+                            }
+                            
                         } label: {
                             ThumbnailView(illustrations: illust)
                         }
@@ -33,6 +74,7 @@ struct ContentView: View {
             }
             .background(Color(white: 0.95))
         }
+        
     }
 }
 

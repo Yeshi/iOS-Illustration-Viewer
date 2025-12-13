@@ -25,8 +25,7 @@ def main():
         seeds.append({
             "id": id_,
             "filename": p.name,
-            "title": "",
-            "tags": [],
+            "tagIDs": [],
             "rating": 0
         })
 

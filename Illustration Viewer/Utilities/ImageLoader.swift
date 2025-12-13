@@ -9,7 +9,7 @@ import UIKit
 
 struct ImageLoader {
     static func loadImage(filename: String) -> UIImage? {
-  
+        
         guard let url = Bundle.main.url(
             forResource: filename,
             withExtension: nil,
@@ -17,8 +17,8 @@ struct ImageLoader {
             print("image not found: \(filename)")
             return nil
         }
-       
-
+        
+        
         return UIImage(contentsOfFile: url.path)
     }
 }

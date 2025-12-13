@@ -14,7 +14,7 @@ struct Illustration_ViewerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                           .environmentObject(repo)
+                .environmentObject(repo)
         }
     }
 }

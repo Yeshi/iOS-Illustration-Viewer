@@ -27,7 +27,7 @@ struct ImageView: View {
                         lastScale = scale
                     }
             )
-            // ダブルタップで元のスケールに
+        // ダブルタップで元のスケールに
             .simultaneousGesture(
                 TapGesture(count: 2)
                     .onEnded {
