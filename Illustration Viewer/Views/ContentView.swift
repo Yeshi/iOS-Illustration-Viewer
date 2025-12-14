@@ -11,6 +11,7 @@ import UIKit
 struct ContentView: View {
     @EnvironmentObject var repo: IllustrationRepository
     @State private var selectedTagIDs: Set<String> = []
+    @State private var showUntaggedOnly: Bool = false
     @State private var showTagSettings = false
     
     private let columns = Array(
@@ -20,6 +21,10 @@ struct ContentView: View {
     
     private var filteredIllustrations: [Illustration] {
         let all = repo.illustrations
+        
+        if showUntaggedOnly {
+            return all.filter( { $0.tagIDs.isEmpty } )
+        }
         
         guard !selectedTagIDs.isEmpty else {
             return all
@@ -32,11 +37,14 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
+            let filtered = filteredIllustrations
+            let filteredIDs = filtered.map { $0.id }
             VStack(spacing: 0) {
                 HStack {
                     TagFilterBar(
                         allTags: repo.allTags,
-                        selectedTagIDs: $selectedTagIDs
+                        selectedTagIDs: $selectedTagIDs,
+                        showUntaggedOnly: $showUntaggedOnly
                     )
                     Button {
                         showTagSettings = true
@@ -58,11 +66,9 @@ struct ContentView: View {
             
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 8) {
-                    ForEach(Array(filteredIllustrations.enumerated()), id: \.1.id){_, illust in
+                    ForEach(Array(filtered.enumerated()), id: \.1.id){ index, illust in
                         NavigationLink {
-                            if let globalIndex = repo.illustrations.firstIndex(where: { $0.id == illust.id }){
-                                DetailView(initialIndex: globalIndex)
-                            }
+                            DetailView(ids: filteredIDs, initialIndex: index)
                             
                         } label: {
                             ThumbnailView(illustrations: illust)

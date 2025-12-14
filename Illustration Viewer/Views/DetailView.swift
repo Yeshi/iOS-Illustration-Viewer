@@ -9,24 +9,31 @@ import SwiftUI
 
 struct DetailView: View {
     @EnvironmentObject var repo: IllustrationRepository
+    
+    let ids: [String]
     @State private var currentIndex: Int
     
-    init(initialIndex: Int) {
-        _currentIndex = State(initialValue: initialIndex)
+    init(ids: [String], initialIndex: Int) {
+        self.ids = ids
+        _currentIndex = State(initialValue: min(max(initialIndex, 0), max(ids.count - 1, 0)))
     }
     
-    // 表示中のイラスト
+    private func illustration(for idx: Int) -> Illustration? {
+        guard ids.indices.contains(idx) else { return nil }
+        let id = ids[idx]
+        return repo.illustrations.first(where: { $0.id == id })
+    }
+    
     private var currentIllustration: Illustration? {
-        guard repo.illustrations.indices.contains(currentIndex) else { return nil }
-        return repo.illustrations[currentIndex]
+        illustration(for: currentIndex)
     }
     
     var body: some View {
         VStack {
             TabView(selection: $currentIndex) {
-                ForEach(repo.illustrations.indices, id: \.self){ idx in
-                    let illust = repo.illustrations[idx]
-                    if let image = ImageLoader.loadImage(filename: illust.filename){
+                ForEach(ids.indices, id: \.self){ idx in
+                    if let illust = illustration(for: idx),
+                       let image = ImageLoader.loadImage(filename: illust.filename) {
                         ImageView(image: image)
                             .tag(idx)
                     }
