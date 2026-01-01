@@ -10,30 +10,43 @@ import SwiftUI
 struct TagFilterBar: View {
     let allTags: [Tag]
     @Binding var selectedTagIDs: Set<String>
+    @Binding var excludedTagIDs: Set<String>
     @Binding var showUntaggedOnly: Bool
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(allTags) { tag in
-                    let isSelected = selectedTagIDs.contains(tag.id)
+                    let isIncluded = selectedTagIDs.contains(tag.id)
+                    let isExcluded = excludedTagIDs.contains(tag.id)
                     
                     Text(tag.label)
                         .font(.caption)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
-                            Capsule().fill(isSelected ? Color.blue.opacity(0.85) : Color.gray.opacity(0.25))
+                            Capsule().fill(
+                                isExcluded ? Color.red.opacity(0.8) :
+                                    isIncluded ? Color.blue.opacity(0.85) :
+                                    Color.gray.opacity(0.25))
                         )
-                        .foregroundStyle(isSelected ? Color.white : Color.primary)
+                        .foregroundStyle((isIncluded || isExcluded) ? Color.white : Color.primary)
                         .onTapGesture {
-                            if showUntaggedOnly {
-                                showUntaggedOnly = false
-                            }
-                            if isSelected {
+                            if isIncluded {
                                 selectedTagIDs.remove(tag.id)
                             } else {
                                 selectedTagIDs.insert(tag.id)
+                                excludedTagIDs.remove(tag.id)
+                                showUntaggedOnly = false
+                            }
+                        }
+                        .onLongPressGesture(minimumDuration: 0.4) {
+                            if isExcluded {
+                                excludedTagIDs.remove(tag.id)
+                            } else {
+                                excludedTagIDs.insert(tag.id)
+                                selectedTagIDs.remove(tag.id)
+                                showUntaggedOnly = false
                             }
                         }
                 }
@@ -54,7 +67,7 @@ struct TagFilterBar: View {
                         }
                     }
                 
-
+                
             }
         }
     }

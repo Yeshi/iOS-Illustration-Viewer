@@ -11,6 +11,7 @@ import UIKit
 struct ContentView: View {
     @EnvironmentObject var repo: IllustrationRepository
     @State private var selectedTagIDs: Set<String> = []
+    @State private var excludedTagIDs: Set<String> = []
     @State private var showUntaggedOnly: Bool = false
     @State private var showTagSettings = false
     
@@ -26,12 +27,16 @@ struct ContentView: View {
             return all.filter( { $0.tagIDs.isEmpty } )
         }
         
-        guard !selectedTagIDs.isEmpty else {
-            return all
-        }
-        
         return all.filter { illust in
-            selectedTagIDs.allSatisfy{ illust.tagIDs.contains($0) }
+            if !excludedTagIDs.isEmpty {
+                if excludedTagIDs.contains(where: { illust.tagIDs.contains($0) }) {
+                    return false
+                }
+            }
+            
+            guard !selectedTagIDs.isEmpty else { return true }
+            
+            return selectedTagIDs.allSatisfy{ illust.tagIDs.contains($0) }
         }
     }
     
@@ -44,6 +49,7 @@ struct ContentView: View {
                     TagFilterBar(
                         allTags: repo.allTags,
                         selectedTagIDs: $selectedTagIDs,
+                        excludedTagIDs: $excludedTagIDs,
                         showUntaggedOnly: $showUntaggedOnly
                     )
                     Button {
