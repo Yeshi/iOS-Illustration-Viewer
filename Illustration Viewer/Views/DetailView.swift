@@ -12,6 +12,7 @@ struct DetailView: View {
     
     let ids: [String]
     @State private var currentIndex: Int
+    @State private var isChromeHidden: Bool = false
     
     init(ids: [String], initialIndex: Int) {
         self.ids = ids
@@ -36,12 +37,17 @@ struct DetailView: View {
                        let image = ImageLoader.loadImage(filename: illust.filename) {
                         ImageView(image: image)
                             .tag(idx)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isChromeHidden.toggle()
+                                }
+                            }
                     }
                 }
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: isChromeHidden ? .never : .automatic))
             
-            if let illust = currentIllustration {
+            if let illust = currentIllustration, !isChromeHidden {
                 TagSelectionBar(
                     allTags: repo.allTags,
                     selectedTagIDs: illust.tagIDs,
@@ -55,7 +61,7 @@ struct DetailView: View {
                 .padding(.horizontal)
             }
         }
+        .toolbar(isChromeHidden ? .hidden : .visible, for: .navigationBar)
     }
     
 }
-
