@@ -11,6 +11,8 @@ final class IllustrationRepository: ObservableObject {
     @Published var illustrations: [Illustration] = []
     @Published var allTags: [Tag] = []
     @Published private var userDataByID: [String: IllustrationUserData] = [:]
+    // 一覧 <-> 詳細遷移監視
+    @Published var listNeedsRefreshTick: Int = 0
     
     var tagByID: [String: Tag] {
         Dictionary(uniqueKeysWithValues: allTags.map { ($0.id, $0) } )
@@ -104,10 +106,10 @@ final class IllustrationRepository: ObservableObject {
     func tagIDs(for id: String) -> [String] {
         userDataByID[id]?.tagIDs ?? []
     }
-
+    
     func toggleTag(_ tagID: String, for id: String) {
         var item = userDataByID[id] ?? IllustrationUserData(id: id)
-
+        
         if item.tagIDs.contains(tagID) {
             item.tagIDs.removeAll { $0 == tagID }
         } else {
@@ -138,4 +140,43 @@ final class IllustrationRepository: ObservableObject {
         guard let i = allTags.firstIndex(where: { $0.id == id }) else { return }
         allTags[i].label = newLabel
         saveTags()
-    }}
+    }
+    func requestListRefresh() {
+        listNeedsRefreshTick += 1
+    }
+    
+    // ディティールビュー表示カウント
+    func markViewed(id: String) {
+        var item = userDataByID[id] ?? IllustrationUserData(id: id)
+        item.viewCount += 1
+        item.lastViewAt = Date()
+        userDataByID[id] = item
+        saveUserData()
+    }
+    
+    #if DEBUG
+    // ビューカウント数表示チェック用
+    func viewCount(for id: String) -> Int {
+        userDataByID[id]?.viewCount ?? 0
+    }
+    #endif
+}
+
+extension IllustrationRepository {
+    // tagID 0番は「お気に入り」固定
+    private var favoriteTagID: String { "0" }
+    
+    func illustrationByID(_ id: String) -> Illustration? {
+        illustrations.first(where: { $0.id == id})
+    }
+    
+    func displayScore(for id: String) -> Int {
+        let favBonus = (tagIDs(for: id).contains(favoriteTagID)) ? 5 : 0
+        let views = userDataByID[id]?.viewCount ?? 0
+        return views + favBonus
+    }
+    
+    func lastViewAt(for id: String) -> Date {
+        userDataByID[id]?.lastViewAt ?? Date.distantPast
+    }
+}

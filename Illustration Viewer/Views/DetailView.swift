@@ -59,7 +59,35 @@ struct DetailView: View {
                 .padding(.horizontal)
             }
         }
+        #if DEBUG
+        .overlay(alignment: .bottomTrailing) {
+            if let illust = currentIllustration {
+                Text("Count: \(repo.viewCount(for: illust.id))")
+                    .font(.caption)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(12)
+                    .opacity(isChromeHidden ? 0.2 : 1.0)
+            }
+        }
+        #endif
+
         .toolbar(isChromeHidden ? .hidden : .visible, for: .navigationBar)
+        .onAppear {
+            if let illust = currentIllustration {
+                repo.markViewed(id: illust.id)
+            }
+        }
+        .onChange(of: currentIndex) { _, _ in
+            if let illust = currentIllustration {
+                repo.markViewed(id: illust.id)
+            }
+        }
+        .onDisappear {
+            repo.requestListRefresh()
+        }
     }
     
 }
