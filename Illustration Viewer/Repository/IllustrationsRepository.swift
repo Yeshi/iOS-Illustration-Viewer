@@ -67,8 +67,13 @@ final class IllustrationRepository: ObservableObject {
         guard let data = try? Data(contentsOf: url) else { return }
         
         do {
-            let userItems = try JSONDecoder().decode([IllustrationUserData].self, from: data)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            
+            let userItems = try decoder.decode([IllustrationUserData].self, from: data)
             userDataByID = Dictionary(uniqueKeysWithValues: userItems.map{ ($0.id, $0) } )
+            
+            saveUserData()
         } catch {
             print("userData読み込みなんか失敗っぽい： \(error)")
         }
@@ -86,7 +91,9 @@ final class IllustrationRepository: ObservableObject {
         
         do {
             let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            
             let data = try encoder.encode(userItems)
             try data.write(to: url,options: [.atomic])
         }catch {
