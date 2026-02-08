@@ -10,10 +10,11 @@ import Combine
 final class IllustrationRepository: ObservableObject {
     @Published var illustrations: [Illustration] = []
     @Published var allTags: [Tag] = []
+    @Published private var userDataByID: [String: IllustrationUserData] = [:]
     
-    lazy var tagID: [String: Tag] = {
+    var tagByID: [String: Tag] {
         Dictionary(uniqueKeysWithValues: allTags.map { ($0.id, $0) } )
-    }()
+    }
     
     private var userDataURL: URL? {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?
@@ -67,15 +68,7 @@ final class IllustrationRepository: ObservableObject {
         
         do {
             let userItems = try JSONDecoder().decode([IllustrationUserData].self, from: data)
-            let map = Dictionary(uniqueKeysWithValues: userItems.map{ ($0.id, $0) } )
-            
-            for i in illustrations.indices {
-                let id = illustrations[i].id
-                if let u = map[id] {
-                    illustrations[i].tagIDs = u.tagIDs
-                    illustrations[i].rating = u.rating
-                }
-            }
+            userDataByID = Dictionary(uniqueKeysWithValues: userItems.map{ ($0.id, $0) } )
         } catch {
             print("userData読み込みなんか失敗っぽい： \(error)")
         }
@@ -84,11 +77,11 @@ final class IllustrationRepository: ObservableObject {
     private func saveUserData() {
         guard let url = userDataURL else { return }
         
-        let userItems: [IllustrationUserData] = illustrations.compactMap{ illlust in
-            if illlust.tagIDs.isEmpty && illlust.rating == 0 {
+        let userItems = userDataByID.values.compactMap { item -> IllustrationUserData? in
+            if item.tagIDs.isEmpty && item.viewCount == 0 && item.lastViewAt == nil {
                 return nil
             }
-            return IllustrationUserData(id: illlust.id, tagIDs: illlust.tagIDs, rating: illlust.rating)
+            return item
         }
         
         do {
@@ -101,16 +94,20 @@ final class IllustrationRepository: ObservableObject {
         }
     }
     
-    func toggleTag(_ tagID: String, for index:Int){
-        guard illustrations.indices.contains(index) else { return }
-        
-        var illust = illustrations[index]
-        if illust.tagIDs.contains(tagID) {
-            illust.tagIDs.removeAll { $0 == tagID }
+    func tagIDs(for id: String) -> [String] {
+        userDataByID[id]?.tagIDs ?? []
+    }
+
+    func toggleTag(_ tagID: String, for id: String) {
+        var item = userDataByID[id] ?? IllustrationUserData(id: id)
+
+        if item.tagIDs.contains(tagID) {
+            item.tagIDs.removeAll { $0 == tagID }
         } else {
-            illust.tagIDs.append(tagID)
+            item.tagIDs.append(tagID)
         }
-        illustrations[index] = illust
+        
+        userDataByID[id] = item
         saveUserData()
     }
     

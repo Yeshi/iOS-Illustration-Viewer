@@ -5,11 +5,11 @@
 //  Created by Yeshi on 2025/12/09.
 //
 
+import Foundation
+
 struct Illustration: Identifiable, Codable {
     let id: String
     let filename: String
-    var tagIDs: [String]
-    var rating: Int
 }
 
 struct Tag: Identifiable, Codable, Hashable {
@@ -19,6 +19,7 @@ struct Tag: Identifiable, Codable, Hashable {
 
 struct IllustrationUserData: Codable, Hashable {
     let id: String
-    var tagIDs: [String]
-    var rating: Int
+    var tagIDs: [String] = []
+    var viewCount: Int = 0
+    var lastViewAt: Date? = nil
 }

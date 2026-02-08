@@ -24,19 +24,20 @@ struct ContentView: View {
         let all = repo.illustrations
         
         if showUntaggedOnly {
-            return all.filter( { $0.tagIDs.isEmpty } )
+            return all.filter { repo.tagIDs(for: $0.id).isEmpty }
         }
         
         return all.filter { illust in
+            let tagIDs = repo.tagIDs(for: illust.id)
             if !excludedTagIDs.isEmpty {
-                if excludedTagIDs.contains(where: { illust.tagIDs.contains($0) }) {
+                if excludedTagIDs.contains(where: { tagIDs.contains($0) }) {
                     return false
                 }
             }
             
             guard !selectedTagIDs.isEmpty else { return true }
             
-            return selectedTagIDs.allSatisfy{ illust.tagIDs.contains($0) }
+            return selectedTagIDs.allSatisfy { tagIDs.contains($0) }
         }
     }
     

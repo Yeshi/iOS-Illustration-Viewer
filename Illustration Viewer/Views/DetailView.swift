@@ -50,11 +50,9 @@ struct DetailView: View {
             if let illust = currentIllustration, !isChromeHidden {
                 TagSelectionBar(
                     allTags: repo.allTags,
-                    selectedTagIDs: illust.tagIDs,
+                    selectedTagIDs: repo.tagIDs(for: illust.id),
                     onToggle: { tag in
-                        if let idx = repo.illustrations.firstIndex(where: { $0.id == illust.id }) {
-                            repo.toggleTag(tag.id, for: idx)
-                        }
+                        repo.toggleTag(tag.id, for: illust.id)
                     }
                 )
                 .padding(.vertical, 8)

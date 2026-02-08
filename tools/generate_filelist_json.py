@@ -24,9 +24,7 @@ def main():
         id_ = p.stem  # "001.png" -> "001"
         seeds.append({
             "id": id_,
-            "filename": p.name,
-            "tagIDs": [],
-            "rating": 0
+            "filename": p.name
         })
 
     OUTPUT_JSON.write_text(
