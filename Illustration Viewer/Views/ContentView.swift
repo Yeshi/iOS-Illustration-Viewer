@@ -138,7 +138,7 @@ struct ThumbnailView: View {
                             .stroke(Color.gray.opacity(0.15), lineWidth: 1)
                     )
                 
-                if let image = ImageLoader.loadImage(filename: illustration.filename) {
+                if let image = ImageLoader.shared.loadImage(filename: illustration.filename) {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()

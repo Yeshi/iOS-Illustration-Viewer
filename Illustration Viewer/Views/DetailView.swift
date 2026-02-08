@@ -34,7 +34,7 @@ struct DetailView: View {
             TabView(selection: $currentIndex) {
                 ForEach(ids.indices, id: \.self){ idx in
                     if let illust = illustration(for: idx),
-                       let image = ImageLoader.loadImage(filename: illust.filename) {
+                       let image = ImageLoader.shared.loadImage(filename: illust.filename) {
                         ImageView(image: image)
                             .tag(idx)
                             .onTapGesture {
@@ -69,7 +69,7 @@ struct DetailView: View {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .padding(12)
-                    .opacity(isChromeHidden ? 0.2 : 1.0)
+                    .opacity(isChromeHidden ? 0 : 1.0)
             }
         }
         #endif
@@ -84,6 +84,13 @@ struct DetailView: View {
             if let illust = currentIllustration {
                 repo.markViewed(id: illust.id)
             }
+            let idxs = [currentIndex - 1, currentIndex, currentIndex + 1]
+            let names = idxs.compactMap { i -> String? in
+                guard ids.indices.contains(i),
+                      let ill = repo.illustrationByID(ids[i]) else { return nil }
+                return ill.filename
+            }
+            ImageLoader.shared.prefetch(filenames: names)
         }
         .onDisappear {
             repo.requestListRefresh()
