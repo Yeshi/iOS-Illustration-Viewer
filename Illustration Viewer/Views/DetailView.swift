@@ -13,6 +13,7 @@ struct DetailView: View {
     let ids: [String]
     @State private var currentIndex: Int
     @State private var isChromeHidden: Bool = false
+    @State private var isInfoPresented: Bool = false
     
     init(ids: [String], initialIndex: Int) {
         self.ids = ids
@@ -45,7 +46,7 @@ struct DetailView: View {
                     }
                 }
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: isChromeHidden ? .never : .automatic))
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             
             if let illust = currentIllustration, !isChromeHidden {
                 TagSelectionBar(
@@ -59,22 +60,34 @@ struct DetailView: View {
                 .padding(.horizontal)
             }
         }
-        #if DEBUG
-        .overlay(alignment: .bottomTrailing) {
-            if let illust = currentIllustration {
-                Text("Count: \(repo.viewCount(for: illust.id))")
-                    .font(.caption)
-                    .padding(.vertical, 6)
-                    .padding(.horizontal, 10)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Capsule())
-                    .padding(12)
-                    .opacity(isChromeHidden ? 0 : 1.0)
-            }
-        }
-        #endif
 
         .toolbar(isChromeHidden ? .hidden : .visible, for: .navigationBar)
+        .toolbar {
+        #if DEBUG
+            if let illust = currentIllustration, !isChromeHidden {
+                ToolbarItem(placement: .topBarTrailing){
+                    Button {
+                        isInfoPresented = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
+                }
+            }
+        #endif
+        }
+        .alert("Debug Info",isPresented: $isInfoPresented) {
+            Button("OK", role: .cancel){ }
+        } message: {
+            if let illust = currentIllustration {
+                Text("""
+                Count:  \(repo.viewCount(for: illust.id))
+                Filename: \(illust.filename)
+                """)
+            } else {
+                Text("No Content")
+            }
+        }
+        
         .onAppear {
             if let illust = currentIllustration {
                 repo.markViewed(id: illust.id)
